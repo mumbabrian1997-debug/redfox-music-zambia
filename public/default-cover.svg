@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" rx="38" fill="url(#bg)" />
+  <circle cx="500" cy="360" r="170" fill="rgba(255,255,255,0.18)" />
+  <circle cx="500" cy="360" r="95" fill="rgba(255,255,255,0.25)" />
+  <path d="M465 290 L610 360 L465 430 Z" fill="#F8FAFC" opacity="0.9" />
+  <rect x="235" y="570" width="530" height="110" rx="18" fill="rgba(15,23,42,0.32)" />
+  <text x="500" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" fill="#F8FAFC" font-weight="700">RedFox</text>
+</svg>

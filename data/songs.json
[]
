@@ -1,0 +1,266 @@
+const loginPanel = document.getElementById('loginPanel');
+const dashboardPanel = document.getElementById('dashboardPanel');
+const loginForm = document.getElementById('loginForm');
+const songForm = document.getElementById('songForm');
+const songManagerList = document.getElementById('songManagerList');
+const storageInfo = document.getElementById('storageInfo');
+const uploadProgressWrap = document.getElementById('uploadProgressWrap');
+const uploadProgressBar = document.getElementById('uploadProgressBar');
+const uploadProgressLabel = document.getElementById('uploadProgressLabel');
+
+const adminTotalSongs = document.getElementById('adminTotalSongs');
+const adminPublishedSongs = document.getElementById('adminPublishedSongs');
+const adminTotalDownloads = document.getElementById('adminTotalDownloads');
+const adminFeaturedSongs = document.getElementById('adminFeaturedSongs');
+
+let currentUserSession = false;
+let currentEditId = null;
+let allAdminSongs = [];
+
+async function checkSession() {
+  const response = await fetch('/api/admin/session');
+  const payload = await response.json();
+  currentUserSession = Boolean(payload.authenticated);
+  renderAdminState();
+
+  if (currentUserSession) {
+    fetchAdminData();
+  }
+}
+
+async function fetchAdminData() {
+  const [songsResponse, statsResponse, settingsResponse] = await Promise.all([
+    fetch('/api/admin/songs'),
+    fetch('/api/admin/stats'),
+    fetch('/api/public/settings'),
+  ]);
+
+  const songsPayload = await songsResponse.json();
+  const statsPayload = await statsResponse.json();
+  const settingsPayload = await settingsResponse.json();
+
+  allAdminSongs = songsPayload.songs || [];
+  renderSongManager(allAdminSongs);
+  renderStats(statsPayload);
+  renderStorageInfo(settingsPayload);
+}
+
+function renderAdminState() {
+  if (currentUserSession) {
+    loginPanel.classList.add('hidden');
+    dashboardPanel.classList.remove('hidden');
+  } else {
+    loginPanel.classList.remove('hidden');
+    dashboardPanel.classList.add('hidden');
+  }
+}
+
+function renderStats(stats) {
+  adminTotalSongs.textContent = stats.totalSongs ?? 0;
+  adminPublishedSongs.textContent = stats.publishedSongs ?? 0;
+  adminTotalDownloads.textContent = stats.totalDownloads ?? 0;
+  adminFeaturedSongs.textContent = stats.featuredSongs ?? 0;
+}
+
+function renderStorageInfo(settings) {
+  const cards = [
+    { label: 'Storage capacity', value: `${settings.storageCapacityGb || 50} GB` },
+    { label: 'Monthly transfer', value: `${settings.bandwidthGbMonthly || 250} GB` },
+    { label: 'Cost estimate', value: settings.costEstimate || 'Shared hosting typically starts around $5-$20/month' },
+    { label: 'Recommendation', value: settings.notes || 'Keep transfer and upload limits monitored.' },
+  ];
+
+  storageInfo.innerHTML = cards.map((card) => `
+    <div class="storage-box">
+      <strong>${card.label}</strong>
+      <p>${card.value}</p>
+    </div>
+  `).join('');
+}
+
+function renderSongManager(songs) {
+  songManagerList.innerHTML = '';
+
+  if (!songs.length) {
+    songManagerList.innerHTML = '<p class="muted">No songs uploaded yet. Use the form above to add the first track.</p>';
+    return;
+  }
+
+  songs.forEach((song) => {
+    const item = document.createElement('div');
+    item.className = 'admin-song-item';
+    item.innerHTML = `
+      <div class="admin-song-head">
+        <div class="admin-song-info">
+          <img src="${song.cover_art || '/default-cover.svg'}" alt="${song.title} cover" />
+          <div>
+            <h3>${song.title}</h3>
+            <p>${song.artist} · ${song.genre || 'General'} </p>
+            <small>${song.is_published ? 'Published' : 'Draft'} · ${song.download_count || 0} downloads</small>
+          </div>
+        </div>
+        <div class="pill ${song.is_published ? 'accent' : ''}">${song.is_published ? 'Live' : 'Draft'}</div>
+      </div>
+
+      <audio controls src="${song.audio_file || ''}" preload="metadata"></audio>
+
+      <div class="admin-song-actions">
+        <button class="secondary-btn" type="button" data-action="preview" data-id="${song.id}">Preview</button>
+        <button class="secondary-btn" type="button" data-action="edit" data-id="${song.id}">Edit</button>
+        <button class="secondary-btn" type="button" data-action="toggle" data-id="${song.id}">${song.is_published ? 'Unpublish' : 'Publish'}</button>
+        <button class="secondary-btn" type="button" data-action="delete" data-id="${song.id}">Delete</button>
+      </div>
+    `;
+    songManagerList.appendChild(item);
+  });
+
+  songManagerList.querySelectorAll('button[data-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+
+      if (action === 'edit') {
+        const song = allAdminSongs.find((item) => item.id === id);
+        if (!song) return;
+        currentEditId = id;
+        document.getElementById('songId').value = id;
+        document.getElementById('formTitle').textContent = 'Edit song';
+        songForm.title.value = song.title || '';
+        songForm.artist.value = song.artist || '';
+        songForm.genre.value = song.genre || '';
+        songForm.releaseDate.value = song.release_date || '';
+        songForm.description.value = song.description || '';
+        songForm.featured.checked = Boolean(song.is_featured);
+        songForm.newRelease.checked = Boolean(song.is_new_release);
+        songForm.published.checked = Boolean(song.is_published);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      if (action === 'preview') {
+        const song = allAdminSongs.find((item) => item.id === id);
+        if (song && song.audio_file) {
+          window.open(song.audio_file, '_blank');
+        }
+        return;
+      }
+
+      if (action === 'toggle') {
+        const song = allAdminSongs.find((item) => item.id === id);
+        if (!song) return;
+        const response = await fetch(`/api/admin/songs/${id}/publish`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_published: !song.is_published }),
+        });
+        const payload = await response.json();
+        if (!payload.success) {
+          showMessage(payload.error || 'Unable to update song status.', 'error');
+          return;
+        }
+        showMessage('Song status updated.', 'success');
+        fetchAdminData();
+        return;
+      }
+
+      if (action === 'delete') {
+        const confirmed = window.confirm('Delete this song permanently?');
+        if (!confirmed) return;
+        const response = await fetch(`/api/admin/songs/${id}`, { method: 'DELETE' });
+        const payload = await response.json();
+        if (!payload.success) {
+          showMessage(payload.error || 'Unable to delete song.', 'error');
+          return;
+        }
+        showMessage('Song deleted successfully.', 'success');
+        fetchAdminData();
+      }
+    });
+  });
+}
+
+function showMessage(message, type) {
+  const existing = document.querySelector('.alert');
+  if (existing) existing.remove();
+
+  const alert = document.createElement('div');
+  alert.className = `alert ${type}`;
+  alert.textContent = message;
+
+  const dashboard = document.getElementById('dashboardPanel');
+  dashboard.insertBefore(alert, dashboard.firstChild);
+}
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const formData = new FormData(loginForm);
+
+  const response = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: new URLSearchParams(formData).toString(),
+  });
+
+  const payload = await response.json();
+  if (!payload.success) {
+    showMessage(payload.error || 'Login failed.', 'error');
+    return;
+  }
+
+  currentUserSession = true;
+  renderAdminState();
+  fetchAdminData();
+});
+
+songForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(songForm);
+  const xhr = new XMLHttpRequest();
+
+  xhr.upload.addEventListener('progress', (event) => {
+    if (!event.lengthComputable) return;
+    const percent = Math.round((event.loaded / event.total) * 100);
+    uploadProgressWrap.classList.remove('hidden');
+    uploadProgressBar.style.width = `${percent}%`;
+    uploadProgressLabel.textContent = `${percent}%`;
+  });
+
+  xhr.onreadystatechange = async () => {
+    if (xhr.readyState !== 4) return;
+
+    uploadProgressWrap.classList.add('hidden');
+    uploadProgressLabel.textContent = '0%';
+    uploadProgressBar.style.width = '0%';
+
+    const payload = JSON.parse(xhr.responseText || '{}');
+    if (xhr.status >= 400 || !payload.success) {
+      showMessage(payload.error || 'Unable to save the song.', 'error');
+      return;
+    }
+
+    showMessage('Song saved successfully.', 'success');
+    resetSongForm();
+    fetchAdminData();
+  };
+
+  xhr.open('POST', '/api/admin/songs');
+  xhr.send(formData);
+});
+
+function resetSongForm() {
+  songForm.reset();
+  document.getElementById('songId').value = '';
+  currentEditId = null;
+  document.getElementById('formTitle').textContent = 'Upload a new song';
+  songForm.published.checked = true;
+}
+
+document.getElementById('resetFormBtn').addEventListener('click', resetSongForm);
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/admin/logout', { method: 'POST' });
+  currentUserSession = false;
+  renderAdminState();
+});
+
+checkSession();

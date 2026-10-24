@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RedFox Music Zambia</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">RF</div>
+        <div>
+          <p class="eyebrow">RedFox ThEpro</p>
+          <h1>RedFox Music Studio Zambia</h1>
+        </div>
+      </div>
+      <nav>
+        <a href="#latest">Latest</a>
+        <a href="#featured">Featured</a>
+        <a href="#trending">Trending</a>
+        <a href="/admin">Admin</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Free music downloads</p>
+          <h2>Stream and download music free from RedFox Music Zambia.</h2>
+          <p class="muted">
+            No payment. No registration. No redirect. Every published song is available for free streaming and direct download.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-btn" href="#latest">Explore library</a>
+            <a class="secondary-btn" href="/admin">Owner dashboard</a>
+          </div>
+        </div>
+        <div class="stats-panel">
+          <div class="stat-card">
+            <strong id="stat-total-songs">0</strong>
+            <span>tracks</span>
+          </div>
+          <div class="stat-card">
+            <strong id="stat-downloads">0</strong>
+            <span>downloads</span>
+          </div>
+          <div class="stat-card">
+            <strong id="stat-artists">0</strong>
+            <span>artists</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls-panel">
+        <div class="controls-grid">
+          <label>
+            Search songs or artists
+            <input type="text" id="searchInput" placeholder="Search by title or artist" />
+          </label>
+          <label>
+            Genre
+            <select id="genreFilter">
+              <option value="all">All genres</option>
+            </select>
+          </label>
+          <label>
+            Artist
+            <select id="artistFilter">
+              <option value="all">All artists</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section id="latest" class="library-section">
+        <div class="section-head">
+          <h3>Latest releases</h3>
+          <span class="pill">New</span>
+        </div>
+        <div id="latestList" class="song-grid"></div>
+      </section>
+
+      <section id="featured" class="library-section">
+        <div class="section-head">
+          <h3>Featured songs</h3>
+          <span class="pill accent">Featured</span>
+        </div>
+        <div id="featuredList" class="song-grid"></div>
+      </section>
+
+      <section id="trending" class="library-section">
+        <div class="section-head">
+          <h3>Trending downloads</h3>
+          <span class="pill soft">Top</span>
+        </div>
+        <div id="trendingList" class="song-grid"></div>
+      </section>
+
+      <section class="library-section">
+        <div class="section-head">
+          <h3>Browse the full library</h3>
+        </div>
+        <div id="libraryList" class="song-grid"></div>
+      </section>
+    </main>
+
+    <template id="songCardTemplate">
+      <article class="song-card">
+        <img class="cover" src="" alt="Album artwork" />
+        <div class="song-meta">
+          <div class="meta-top">
+            <div>
+              <h4 class="song-title"></h4>
+              <p class="artist-name"></p>
+            </div>
+            <span class="song-badge"></span>
+          </div>
+          <p class="description"></p>
+          <div class="technical-row">
+            <span class="format"></span>
+            <span class="file-size"></span>
+            <span class="release-date"></span>
+          </div>
+          <audio controls preload="metadata"></audio>
+          <div class="actions-row">
+            <a class="download-btn" href="#">Download Free</a>
+            <span class="downloads-count"></span>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

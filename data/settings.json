@@ -1,0 +1,6 @@
+{
+  "storageCapacityGb": 50,
+  "bandwidthGbMonthly": 250,
+  "costEstimate": "Typical shared-hosting plans range from $5-$20/month for a 50GB storage and 250GB monthly transfer budget; larger libraries or more downloads increase the plan size.",
+  "notes": "Use a real hosting plan with a transfer cap and monitor audio sizes. For heavy daily downloads, upgrade to a larger plan or object storage service."
+}

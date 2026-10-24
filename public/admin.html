@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RedFox Music Zambia Admin</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="admin-body">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Owner access</p>
+        <h1>RedFox Music Admin Dashboard</h1>
+      </div>
+      <a class="secondary-btn" href="/">View public library</a>
+    </header>
+
+    <main class="admin-shell">
+      <section id="loginPanel" class="card auth-card">
+        <h2>Sign in</h2>
+        <form id="loginForm">
+          <label>
+            Username
+            <input type="text" name="username" placeholder="Enter admin username" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="Enter admin password" required />
+          </label>
+          <button type="submit" class="primary-btn full-width">Login</button>
+        </form>
+      </section>
+
+      <section id="dashboardPanel" class="dashboard hidden">
+        <div class="stats-strip">
+          <div class="stat-card">
+            <strong id="adminTotalSongs">0</strong>
+            <span>Total songs</span>
+          </div>
+          <div class="stat-card">
+            <strong id="adminPublishedSongs">0</strong>
+            <span>Published</span>
+          </div>
+          <div class="stat-card">
+            <strong id="adminTotalDownloads">0</strong>
+            <span>Downloads</span>
+          </div>
+          <div class="stat-card">
+            <strong id="adminFeaturedSongs">0</strong>
+            <span>Featured</span>
+          </div>
+        </div>
+
+        <div class="card storage-card">
+          <h2>Storage and download budget</h2>
+          <div id="storageInfo" class="storage-info"></div>
+        </div>
+
+        <div class="card form-card">
+          <div class="section-head">
+            <h2 id="formTitle">Upload a new song</h2>
+            <button id="resetFormBtn" type="button" class="secondary-btn">Reset form</button>
+          </div>
+
+          <form id="songForm" enctype="multipart/form-data">
+            <input type="hidden" name="songId" id="songId" />
+            <div class="two-column-grid">
+              <label>
+                Song title
+                <input type="text" name="title" required />
+              </label>
+              <label>
+                Artist name
+                <input type="text" name="artist" required />
+              </label>
+              <label>
+                Genre
+                <input type="text" name="genre" placeholder="e.g. Afro-pop" />
+              </label>
+              <label>
+                Release date
+                <input type="date" name="releaseDate" />
+              </label>
+            </div>
+
+            <label>
+              Song description
+              <textarea name="description" rows="4" placeholder="Write a short description for the public library..."></textarea>
+            </label>
+
+            <div class="two-column-grid">
+              <label>
+                Audio file
+                <input type="file" name="audioFile" accept=".mp3,.wav,.flac,.aac,.m4a,.ogg,.mp4" />
+              </label>
+              <label>
+                Cover artwork
+                <input type="file" name="coverArt" accept=".jpg,.jpeg,.png,.webp" />
+              </label>
+            </div>
+
+            <div class="checkbox-grid">
+              <label><input type="checkbox" name="featured" /> Featured song</label>
+              <label><input type="checkbox" name="newRelease" /> New release</label>
+              <label><input type="checkbox" name="published" checked /> Publish immediately</label>
+            </div>
+
+            <div class="upload-progress hidden" id="uploadProgressWrap">
+              <div class="progress-bar">
+                <span id="uploadProgressBar"></span>
+              </div>
+              <small id="uploadProgressLabel">0%</small>
+            </div>
+
+            <button type="submit" class="primary-btn full-width" id="submitSongBtn">Save song</button>
+          </form>
+        </div>
+
+        <div class="card songs-card">
+          <div class="section-head">
+            <h2>Manage songs</h2>
+            <button id="logoutBtn" type="button" class="secondary-btn">Logout</button>
+          </div>
+          <div id="songManagerList" class="admin-song-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/admin.js"></script>
+  </body>
+</html>
